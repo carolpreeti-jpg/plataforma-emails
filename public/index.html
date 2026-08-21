@@ -21,86 +21,30 @@
     <div class="brand">
       <span class="brand-mark">◆</span>
       <div>
-        <div class="brand-name">Artes por Cliente</div>
+        <div class="brand-name">EDUCA</div>
         <div class="brand-sub">gerador de e-mail</div>
       </div>
     </div>
 
     <nav class="tabs">
-      <button class="tab active" data-tab="clientes">
-        <span class="tab-index">01</span> Clientes
-      </button>
-      <button class="tab" data-tab="conteudo">
-        <span class="tab-index">02</span> Conteúdo
+      <button class="tab active" data-tab="conteudo">
+        <span class="tab-index">01</span> Conteúdo
       </button>
       <button class="tab" data-tab="gerar">
-        <span class="tab-index">03</span> Gerar
+        <span class="tab-index">02</span> Gerar
       </button>
+    </nav>
+
+    <nav class="tabs tabs-secondary">
+      <button class="tab" data-tab="clientes">Clientes</button>
     </nav>
 
   </aside>
 
   <main class="content">
 
-    <!-- ABA CLIENTES -->
-    <section class="panel active" id="panel-clientes">
-      <header class="panel-head">
-        <h1>Clientes</h1>
-        <p>Cadastre cor e logo de cada cliente. Isso alimenta a geração automática das artes.</p>
-      </header>
-
-      <div class="grid-clients" id="lista-clientes"></div>
-
-      <form class="card form-cliente" id="form-cliente">
-        <h2 id="form-cliente-titulo">Novo cliente</h2>
-        <input type="hidden" id="cliente-id-editando">
-
-        <div class="field">
-          <label for="nome">Nome do cliente</label>
-          <input type="text" id="nome" name="nome" placeholder="Ex: Fundação ABC" required>
-        </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label for="corPrimaria">Cor primária</label>
-            <div class="color-input">
-              <input type="color" id="corPrimaria" name="corPrimaria" value="#1F3B4D">
-              <input type="text" id="hex-primaria-input" class="hex-input" maxlength="7" placeholder="#000000" value="#1F3B4D">
-            </div>
-            <div class="preview-swatch" id="preview-primaria" style="background: #1F3B4D;"></div>
-          </div>
-          <div class="field">
-            <label for="corSecundaria">Cor secundária</label>
-            <div class="color-input">
-              <input type="color" id="corSecundaria" name="corSecundaria" value="#F2A93B">
-              <input type="text" id="hex-secundaria-input" class="hex-input" maxlength="7" placeholder="#000000" value="#F2A93B">
-            </div>
-            <div class="preview-swatch" id="preview-secundaria" style="background: #F2A93B;"></div>
-          </div>
-          <div class="field">
-            <label for="corTexto">Cor do texto no botão</label>
-            <div class="color-input">
-              <input type="color" id="corTexto" name="corTexto" value="#FFFFFF">
-              <input type="text" id="hex-texto-input" class="hex-input" maxlength="7" placeholder="#000000" value="#FFFFFF">
-            </div>
-            <div class="preview-swatch" id="preview-texto" style="background: #FFFFFF;"></div>
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="logo">Logo (PNG, fundo transparente de preferência)</label>
-          <input type="file" id="logo" name="logo" accept="image/*">
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn ghost" id="btn-cancelar-edicao" style="display:none">Cancelar edição</button>
-          <button type="submit" class="btn primary">Salvar cliente</button>
-        </div>
-      </form>
-    </section>
-
     <!-- ABA CONTEÚDO -->
-    <section class="panel" id="panel-conteudo">
+    <section class="panel active" id="panel-conteudo">
       <header class="panel-head">
         <h1>Conteúdo da campanha</h1>
         <p>Cole o texto e preencha os campos automaticamente, ou edite manualmente abaixo. Os e-mails são mensais — cada mês tem seu próprio conteúdo salvo separadamente.</p>
@@ -178,9 +122,7 @@ Acesse a plataforma e veja as trilhas e materiais preparados para você.
         </div>
 
         <div class="form-actions">
-          <button type="submit" class="btn primary">Salvar conteúdo</button>
-          <button type="button" class="btn ghost" id="btn-proximo-gerar">Próximo →</button>
-          <span class="save-status" id="conteudo-status"></span>
+          <button type="submit" class="btn primary">Próximo →</button>
         </div>
       </form>
     </section>
@@ -231,6 +173,63 @@ Acesse a plataforma e veja as trilhas e materiais preparados para você.
         </div>
         <div class="grid-resultados" id="lista-resultados"></div>
       </div>
+    </section>
+
+    <!-- ABA CLIENTES -->
+    <section class="panel" id="panel-clientes">
+      <header class="panel-head">
+        <h1>Clientes</h1>
+        <p>Cadastre cor e logo de cada cliente. Isso alimenta a geração automática das artes.</p>
+      </header>
+
+      <div class="grid-clients" id="lista-clientes"></div>
+
+      <form class="card form-cliente" id="form-cliente">
+        <h2 id="form-cliente-titulo">Novo cliente</h2>
+        <input type="hidden" id="cliente-id-editando">
+
+        <div class="field">
+          <label for="nome">Nome do cliente</label>
+          <input type="text" id="nome" name="nome" placeholder="Ex: Fundação ABC" required>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="corPrimaria">Cor primária</label>
+            <div class="color-input">
+              <input type="color" id="corPrimaria" name="corPrimaria" value="#1F3B4D">
+              <input type="text" id="hex-primaria-input" class="hex-input" maxlength="7" placeholder="#000000" value="#1F3B4D">
+            </div>
+            <div class="preview-swatch" id="preview-primaria" style="background: #1F3B4D;"></div>
+          </div>
+          <div class="field">
+            <label for="corSecundaria">Cor secundária</label>
+            <div class="color-input">
+              <input type="color" id="corSecundaria" name="corSecundaria" value="#F2A93B">
+              <input type="text" id="hex-secundaria-input" class="hex-input" maxlength="7" placeholder="#000000" value="#F2A93B">
+            </div>
+            <div class="preview-swatch" id="preview-secundaria" style="background: #F2A93B;"></div>
+          </div>
+          <div class="field">
+            <label for="corTexto">Cor do texto no botão</label>
+            <div class="color-input">
+              <input type="color" id="corTexto" name="corTexto" value="#FFFFFF">
+              <input type="text" id="hex-texto-input" class="hex-input" maxlength="7" placeholder="#000000" value="#FFFFFF">
+            </div>
+            <div class="preview-swatch" id="preview-texto" style="background: #FFFFFF;"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="logo">Logo (PNG, fundo transparente de preferência)</label>
+          <input type="file" id="logo" name="logo" accept="image/*">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn ghost" id="btn-cancelar-edicao" style="display:none">Cancelar edição</button>
+          <button type="submit" class="btn primary">Salvar cliente</button>
+        </div>
+      </form>
     </section>
 
   </main>

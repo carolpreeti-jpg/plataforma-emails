@@ -495,7 +495,6 @@ document.getElementById("btn-extrair-texto").addEventListener("click", () => {
 // ======================= CONTEÚDO =======================
 
 const formConteudo = document.getElementById("form-conteudo");
-const conteudoStatus = document.getElementById("conteudo-status");
 const CAMPOS_CONTEUDO = ["tituloNegrito", "tituloRegular", "corpo", "pergunta", "ctaTexto", "ctaBotao"];
 
 // os campos só são preenchidos pela extração do texto colado (ver "Colar texto da campanha"),
@@ -525,12 +524,6 @@ async function salvarConteudo() {
 
 formConteudo.addEventListener("submit", async (e) => {
   e.preventDefault();
-  await salvarConteudo();
-  conteudoStatus.textContent = "salvo ✓";
-  setTimeout(() => (conteudoStatus.textContent = ""), 2000);
-});
-
-document.getElementById("btn-proximo-gerar").addEventListener("click", async () => {
   await salvarConteudo();
   irParaAba("gerar");
 });

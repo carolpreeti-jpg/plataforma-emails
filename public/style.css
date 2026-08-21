@@ -166,6 +166,11 @@ body {
   flex-direction: column;
   gap: 6px;
 }
+.tabs-secondary {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
 .tab {
   display: flex;
   align-items: center;
@@ -776,6 +781,14 @@ body {
   }
   .brand { margin-bottom: 0; margin-right: 20px; }
   .tabs { flex-direction: row; }
+  .tabs-secondary {
+    margin-top: 0;
+    padding-top: 0;
+    margin-left: 20px;
+    padding-left: 20px;
+    border-top: none;
+    border-left: 1px solid var(--border);
+  }
   .side-footer { display: none; }
   .content { padding: 28px 20px; }
 }
