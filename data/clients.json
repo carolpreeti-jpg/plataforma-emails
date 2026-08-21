@@ -1,0 +1,114 @@
+[
+  {
+    "id": "brb-previdencia-msrt95z3",
+    "nome": "BRB Previdência",
+    "corPrimaria": "#0091ff",
+    "corSecundaria": "#3861c2",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786643238778-brb.png"
+  },
+  {
+    "id": "brf-previdencia-msrtbbes",
+    "nome": "BRF Previdência",
+    "corPrimaria": "#93a7f8",
+    "corSecundaria": "#3861c2",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786643339137-brf.png"
+  },
+  {
+    "id": "viva-educa-msrthdnj",
+    "nome": "Viva Educa",
+    "corPrimaria": "#81bc4a",
+    "corSecundaria": "#00937f",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786643621979-logo-viva-educa-cinza.png"
+  },
+  {
+    "id": "fachesf-msrtiywf",
+    "nome": "Fachesf",
+    "corPrimaria": "#62b78d",
+    "corSecundaria": "#003159",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786643696168-realize-voca-branco-copiar.png"
+  },
+  {
+    "id": "sabesprev-msrtkll6",
+    "nome": "Sabesprev",
+    "corPrimaria": "#0091ff",
+    "corSecundaria": "#0061ca",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786643772231-sabesprev.png"
+  },
+  {
+    "id": "neos-msrtm879",
+    "nome": "Néos",
+    "corPrimaria": "#679134",
+    "corSecundaria": "#2d671b",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786643848193-neos.png"
+  },
+  {
+    "id": "brb-previdencia-copia-msrtot64",
+    "nome": "MBPrev",
+    "corPrimaria": "#0091ff",
+    "corSecundaria": "#0150d0",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786644272224-mbprev.png"
+  },
+  {
+    "id": "mais-viva-msru05mf",
+    "nome": "Mais Viva",
+    "corPrimaria": "#5fb073",
+    "corSecundaria": "#084552",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786644522665-maisvida.png"
+  },
+  {
+    "id": "viking-msru1fqj",
+    "nome": "Viking",
+    "corPrimaria": "#244870",
+    "corSecundaria": "#00a1b7",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786644557800-viking.png"
+  },
+  {
+    "id": "valia-msru26ea",
+    "nome": "Valia",
+    "corPrimaria": "#8f3fe2",
+    "corSecundaria": "#0b92ef",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786644592349-valia.png"
+  },
+  {
+    "id": "isbre-msru2yhg",
+    "nome": "Isbre",
+    "corPrimaria": "#03b15d",
+    "corSecundaria": "#122082",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786644628753-isbre.png"
+  },
+  {
+    "id": "forluz-msru83z3",
+    "nome": "Forluz",
+    "corPrimaria": "#fe8a16",
+    "corSecundaria": "#f2a93b",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786644869148-forluz.png"
+  },
+  {
+    "id": "eqtprev-msru8y99",
+    "nome": "EQTPREV",
+    "corPrimaria": "#8038fa",
+    "corSecundaria": "#5291ec",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786644908395-eqtprev.png"
+  },
+  {
+    "id": "vivest-msru9uox",
+    "nome": "Vivest",
+    "corPrimaria": "#e14360",
+    "corSecundaria": "#3e2a8c",
+    "corTexto": "#ffffff",
+    "logo": "uploads/1786644950429-vida-invest.png"
+  }
+]

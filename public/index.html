@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma de Artes — E-mails por Cliente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+<div class="grid-overlay"></div>
+
+<div class="shell">
+
+  <aside class="side">
+    <div class="brand">
+      <span class="brand-mark">◆</span>
+      <div>
+        <div class="brand-name">Artes por Cliente</div>
+        <div class="brand-sub">gerador de e-mail</div>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="clientes">
+        <span class="tab-index">01</span> Clientes
+      </button>
+      <button class="tab" data-tab="conteudo">
+        <span class="tab-index">02</span> Conteúdo
+      </button>
+      <button class="tab" data-tab="gerar">
+        <span class="tab-index">03</span> Gerar
+      </button>
+    </nav>
+
+  </aside>
+
+  <main class="content">
+
+    <!-- ABA CLIENTES -->
+    <section class="panel active" id="panel-clientes">
+      <header class="panel-head">
+        <h1>Clientes</h1>
+        <p>Cadastre cor e logo de cada cliente. Isso alimenta a geração automática das artes.</p>
+      </header>
+
+      <div class="grid-clients" id="lista-clientes"></div>
+
+      <form class="card form-cliente" id="form-cliente">
+        <h2 id="form-cliente-titulo">Novo cliente</h2>
+        <input type="hidden" id="cliente-id-editando">
+
+        <div class="field">
+          <label for="nome">Nome do cliente</label>
+          <input type="text" id="nome" name="nome" placeholder="Ex: Fundação ABC" required>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="corPrimaria">Cor primária</label>
+            <div class="color-input">
+              <input type="color" id="corPrimaria" name="corPrimaria" value="#1F3B4D">
+              <input type="text" id="hex-primaria-input" class="hex-input" maxlength="7" placeholder="#000000" value="#1F3B4D">
+            </div>
+            <div class="preview-swatch" id="preview-primaria" style="background: #1F3B4D;"></div>
+          </div>
+          <div class="field">
+            <label for="corSecundaria">Cor secundária</label>
+            <div class="color-input">
+              <input type="color" id="corSecundaria" name="corSecundaria" value="#F2A93B">
+              <input type="text" id="hex-secundaria-input" class="hex-input" maxlength="7" placeholder="#000000" value="#F2A93B">
+            </div>
+            <div class="preview-swatch" id="preview-secundaria" style="background: #F2A93B;"></div>
+          </div>
+          <div class="field">
+            <label for="corTexto">Cor do texto no botão</label>
+            <div class="color-input">
+              <input type="color" id="corTexto" name="corTexto" value="#FFFFFF">
+              <input type="text" id="hex-texto-input" class="hex-input" maxlength="7" placeholder="#000000" value="#FFFFFF">
+            </div>
+            <div class="preview-swatch" id="preview-texto" style="background: #FFFFFF;"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="logo">Logo (PNG, fundo transparente de preferência)</label>
+          <input type="file" id="logo" name="logo" accept="image/*">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn ghost" id="btn-cancelar-edicao" style="display:none">Cancelar edição</button>
+          <button type="submit" class="btn primary">Salvar cliente</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ABA CONTEÚDO -->
+    <section class="panel" id="panel-conteudo">
+      <header class="panel-head">
+        <h1>Conteúdo da campanha</h1>
+        <p>Cole o texto e preencha os campos automaticamente, ou edite manualmente abaixo. Os e-mails são mensais — cada mês tem seu próprio conteúdo salvo separadamente.</p>
+      </header>
+
+      <div class="card mes-seletor-card">
+        <div class="field mes-field">
+          <label>Mês da campanha</label>
+          <div class="dropdown mes-select" id="mes-conteudo">
+            <button type="button" class="dropdown-toggle">
+              <span class="dropdown-label"></span>
+              <span class="dropdown-arrow">▾</span>
+            </button>
+            <div class="dropdown-menu"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colar texto e preencher os campos automaticamente -->
+      <div class="card">
+        <h2>Colar texto da campanha</h2>
+        <div class="field">
+          <label for="colar-texto">Cole o texto completo — a plataforma identifica cada parte automaticamente</label>
+          <textarea id="colar-texto" rows="8" placeholder="No Mês do Cliente, o foco é ainda mais em você.
+E é pra você que publicamos conteúdo semanalmente em nossa plataforma de educação financeira.
+É gratuito! É gamificado! É conhecimento para o seu futuro!
+Quer entender mais sobre finanças e investimentos e tomar decisões com mais segurança?
+Acesse a plataforma e veja as trilhas e materiais preparados para você.
+< Quero acessar >"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn primary" id="btn-extrair-texto">Preencher campos</button>
+          <span class="save-status" id="extrair-status"></span>
+        </div>
+      </div>
+
+      <!-- Formulário de edição manual -->
+      <form class="card" id="form-conteudo">
+        <h2>Ajustar e salvar</h2>
+
+        <div class="field">
+          <label for="foto">Foto de fundo (atrás do título, 1080×770px de preferência)</label>
+          <input type="file" id="foto" name="foto" accept="image/*">
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="tituloNegrito">Título — parte em negrito</label>
+            <input type="text" id="tituloNegrito" name="tituloNegrito">
+          </div>
+          <div class="field">
+            <label for="tituloRegular">Título — parte regular</label>
+            <input type="text" id="tituloRegular" name="tituloRegular">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="corpo">Corpo do texto</label>
+          <textarea id="corpo" name="corpo" rows="5"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="pergunta">Pergunta em destaque</label>
+          <input type="text" id="pergunta" name="pergunta" placeholder="Ex: Que tal dar um passo hoje?">
+        </div>
+
+        <div class="field">
+          <label for="ctaTexto">Texto da faixa final (acima do botão)</label>
+          <textarea id="ctaTexto" name="ctaTexto" rows="2"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="ctaBotao">Texto do botão</label>
+          <input type="text" id="ctaBotao" name="ctaBotao">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Salvar conteúdo</button>
+          <button type="button" class="btn ghost" id="btn-proximo-gerar">Próximo →</button>
+          <span class="save-status" id="conteudo-status"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- ABA GERAR -->
+    <section class="panel" id="panel-gerar">
+      <header class="panel-head">
+        <h1>Gerar artes</h1>
+        <p>Aplica o conteúdo salvo do mês escolhido em todos os clientes cadastrados e gera um PNG para cada um.</p>
+      </header>
+
+      <div class="card mes-seletor-card">
+        <div class="field mes-field">
+          <label>Mês da campanha</label>
+          <div class="dropdown mes-select" id="mes-gerar">
+            <button type="button" class="dropdown-toggle">
+              <span class="dropdown-label"></span>
+              <span class="dropdown-arrow">▾</span>
+            </button>
+            <div class="dropdown-menu"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gerar-principal">
+        <button class="btn primary btn-gerar" id="btn-gerar">Gerar artes para todos os clientes</button>
+        <div class="gerar-status" id="gerar-status"></div>
+      </div>
+
+      <div class="card gerar-teste">
+        <h2>Testar um cliente só</h2>
+        <div class="form-actions">
+          <div class="dropdown select-cliente" id="select-cliente-teste">
+            <button type="button" class="dropdown-toggle">
+              <span class="dropdown-label"></span>
+              <span class="dropdown-arrow">▾</span>
+            </button>
+            <div class="dropdown-menu"></div>
+          </div>
+          <button class="btn ghost" id="btn-gerar-teste">Gerar só esse</button>
+        </div>
+      </div>
+
+      <div class="gerar-resultados" id="gerar-resultados" style="display:none">
+        <div class="gerar-resultados-head">
+          <h2>Resultados</h2>
+          <button class="btn primary" id="btn-baixar-zip">Baixar tudo (.zip)</button>
+        </div>
+        <div class="grid-resultados" id="lista-resultados"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" id="modal-close" type="button">✕</button>
+    <div id="modal-cliente-content"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="imagem-modal-overlay">
+  <div class="modal modal-imagem">
+    <button class="modal-close" id="imagem-modal-close" type="button">✕</button>
+    <img id="imagem-modal-img" src="" alt="">
+    <div class="modal-imagem-info">
+      <span id="imagem-modal-nome"></span>
+      <a class="btn primary" id="imagem-modal-download" href="" download>Baixar PNG</a>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

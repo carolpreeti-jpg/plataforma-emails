@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#e5e5e5; }
+
+  :root {
+    --cor-primaria: #0D7FE0;   /* azul de fundo */
+    --cor-moeda-ext: #F5A623;  /* anel da moeda */
+    --cor-moeda-int: #FFC531;  /* miolo da moeda */
+    --cor-dolar: #C9781A;      /* símbolo $ */
+  }
+
+  .arte { width: 1080px; background:#fff; }
+
+  /* faixa azul do topo */
+  .faixa-topo {
+    background: var(--cor-primaria);
+    height: 150px;
+    position: relative;
+  }
+
+  /* selo/badge com a logo, sobrepondo a faixa */
+  .selo {
+    position: absolute;
+    left: 50%;
+    top: 55px;
+    transform: translateX(-50%);
+    width: 168px;
+    background: var(--cor-primaria);
+    border-radius: 26px 26px 40px 40px;
+    padding: 20px 14px 18px 14px;
+    text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  }
+
+  .moeda {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 10px auto;
+    border-radius: 50%;
+    background: var(--cor-moeda-ext);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .moeda-interior {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--cor-moeda-int);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .moeda-interior span {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 34px;
+    color: var(--cor-dolar);
+  }
+
+  .selo-marca {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--cor-moeda-int);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .selo-sub {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    color: #ffffff;
+    letter-spacing: 0.2px;
+  }
+
+  /* espaço reservado pra próxima seção (imagem) começar */
+  .placeholder-proxima-secao {
+    height: 60px;
+    background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #fafafa 10px, #fafafa 20px);
+  }
+</style>
+</head>
+<body>
+
+  <div class="arte">
+    <div class="faixa-topo">
+      <div class="selo">
+        <div class="moeda">
+          <div class="moeda-interior"><span>$</span></div>
+        </div>
+        <div class="selo-marca">Educa</div>
+        <div class="selo-sub">Previdência BRB</div>
+      </div>
+    </div>
+    <div class="placeholder-proxima-secao"></div>
+  </div>
+
+</body>
+</html>
