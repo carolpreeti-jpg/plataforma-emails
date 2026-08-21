@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: plataforma-emails
+    runtime: docker
+    plan: free
+    envVars:
+      - key: PUPPETEER_SKIP_DOWNLOAD
+        value: "true"
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/chromium

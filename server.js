@@ -6,7 +6,7 @@ const puppeteer = require("puppeteer");
 const JSZip = require("jszip");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const DATA_DIR = path.join(__dirname, "data");
 const CLIENTS_PATH = path.join(DATA_DIR, "clients.json");
@@ -218,7 +218,7 @@ app.post("/api/generate", async (req, res) => {
     const pastaDoMes = path.join(OUTPUT_DIR, mes);
     fs.mkdirSync(pastaDoMes, { recursive: true });
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox"] });
     const page = await browser.newPage();
     const resultados = [];
 
