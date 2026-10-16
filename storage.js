@@ -50,13 +50,26 @@ function criarSupabase() {
         console.log(`Bucket "${BUCKET}" criado no Supabase.`);
       }
     },
+    // não usa bucket().download(): a CDN do Supabase devolvia versões antigas do clients.json para o
+    // servidor do Render (gravações "sumiam" e a gravação seguinte sobrescrevia dados novos).
+    // O parâmetro único na URL faz cada leitura ir direto ao armazenamento.
     async ler(caminho) {
-      const { data, error } = await bucket().download(normalizar(caminho));
-      if (error) {
-        if (error.status === 404 || error.statusCode === "404" || /not found/i.test(error.message)) return null;
-        throw error;
-      }
-      return Buffer.from(await data.arrayBuffer());
+      const caminhoUrl = normalizar(caminho).split("/").map(encodeURIComponent).join("/");
+      const url = `${process.env.SUPABASE_URL}/storage/v1/object/authenticated/${BUCKET}/${caminhoUrl}?v=${Date.now()}`;
+      const res = await fetch(url, {
+        headers: {
+          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+          "Cache-Control": "no-cache",
+        },
+        cache: "no-store",
+      });
+      if (res.ok) return Buffer.from(await res.arrayBuffer());
+      // a API do Storage responde 400 tanto para "não existe" quanto para chave inválida; só o primeiro vira null
+      // (tratar erro de acesso como "não existe" faria o servidor gravar uma lista vazia por cima dos dados)
+      const corpo = await res.text();
+      if (res.status === 404 || /NoSuchKey|not_found|InvalidKey/.test(corpo)) return null;
+      throw new Error(`Supabase Storage ${res.status} ao ler ${caminho}: ${corpo}`);
     },
     async salvar(caminho, buffer, contentType) {
       const { error } = await bucket().upload(normalizar(caminho), buffer, {
