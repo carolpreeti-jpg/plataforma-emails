@@ -270,7 +270,9 @@ app.post("/api/generate", async (req, res) => {
       const htmlFinal = preencherTemplate(templateHtml, dados);
 
       await page.setViewport({ width: 1080, height: 1600, deviceScaleFactor: 2 });
-      await page.setContent(htmlFinal, { waitUntil: "networkidle0" });
+      // "load" + fontes prontas em vez de "networkidle0": no Render, esperar a rede ficar ociosa travava a geração
+      await page.setContent(htmlFinal, { waitUntil: "load" });
+      await page.evaluate(() => document.fonts.ready);
 
       const elemento = await page.$(".arte");
       const caminho = `output/${mes}/${cliente.id}.png`;
@@ -282,7 +284,8 @@ app.post("/api/generate", async (req, res) => {
     res.json(resultados);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ erro: "Falha ao gerar as artes.", detalhe: err.message });
+    const navegador = browser ? await browser.version().catch(() => "?") : "não abriu";
+    res.status(500).json({ erro: "Falha ao gerar as artes.", detalhe: err.message, navegador });
   } finally {
     if (browser) await browser.close();
   }
