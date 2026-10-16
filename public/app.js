@@ -206,9 +206,10 @@ function abrirModalCliente(cliente) {
       </div>
     </div>
     <div class="modal-fontes">
-      ${htmlFonteModal("Fonte do título", cliente.fonteTitulo, "Baloo 2")}
-      ${htmlFonteModal("Fonte do texto", cliente.fonteTexto, "Quicksand")}
+      ${htmlFonteModal("fonteTitulo", "Fonte do título", cliente.fonteTitulo, "Baloo 2")}
+      ${htmlFonteModal("fonteTexto", "Fonte do texto", cliente.fonteTexto, "Quicksand")}
     </div>
+    <p class="modal-fonte-dica">Selecione todos os arquivos da fonte de uma vez (Regular, SemiBold, Bold, ExtraBold...) — .ttf, .otf, .woff ou .woff2.</p>
     <div class="modal-actions">
       <button class="btn ghost" id="modal-btn-copiar">Copiar</button>
       <button class="btn ghost" id="modal-btn-editar">Editar</button>
@@ -229,6 +230,27 @@ function abrirModalCliente(cliente) {
     excluirCliente(cliente.id);
   });
 
+  // fontes: enviar/trocar abre o seletor de arquivos e já salva; "usar padrão" remove a fonte do cliente
+  modalContent.querySelectorAll(".modal-fonte").forEach((caixa) => {
+    const campo = caixa.dataset.campo;
+    const input = caixa.querySelector("input[type=file]");
+    caixa.querySelector(".btn-enviar-fonte").addEventListener("click", () => input.click());
+    input.addEventListener("change", () => {
+      if (input.files.length === 0) return;
+      const dados = new FormData();
+      Array.from(input.files).forEach((arquivo) => dados.append(campo, arquivo));
+      salvarFonteDoModal(cliente.id, caixa, dados);
+    });
+    const remover = caixa.querySelector(".btn-remover-fonte");
+    if (remover) {
+      remover.addEventListener("click", () => {
+        const dados = new FormData();
+        dados.append(`remover_${campo}`, "1");
+        salvarFonteDoModal(cliente.id, caixa, dados);
+      });
+    }
+  });
+
   modalOverlay.classList.add("active");
 }
 
@@ -236,11 +258,35 @@ function temFonte(fonte) {
   return Boolean(fonte && fonte.arquivos && fonte.arquivos.length);
 }
 
-function htmlFonteModal(rotulo, fonte, padrao) {
-  const nome = temFonte(fonte)
+function htmlFonteModal(campo, rotulo, fonte, padrao) {
+  const possui = temFonte(fonte);
+  const nome = possui
     ? `<span class="modal-fonte-nome">${fonte.nome}</span>`
     : `<span class="modal-fonte-nome padrao">${padrao} (padrão)</span>`;
-  return `<div class="modal-fonte"><span class="modal-fonte-rotulo">${rotulo}</span>${nome}</div>`;
+  return `
+    <div class="modal-fonte" data-campo="${campo}">
+      <span class="modal-fonte-rotulo">${rotulo}</span>${nome}
+      <input type="file" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
+      <div class="modal-fonte-acoes">
+        <button type="button" class="btn ghost btn-enviar-fonte">${possui ? "Trocar fonte" : "Enviar fonte"}</button>
+        ${possui ? `<button type="button" class="btn-link btn-remover-fonte">usar padrão</button>` : ""}
+      </div>
+    </div>`;
+}
+
+async function salvarFonteDoModal(clienteId, caixa, dados) {
+  caixa.classList.add("enviando");
+  caixa.querySelector(".btn-enviar-fonte").textContent = "Enviando...";
+  const res = await fetch(`/api/clients/${clienteId}`, { method: "PUT", body: dados });
+  const corpo = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    alert(corpo.erro || "Não foi possível salvar a fonte.");
+    caixa.classList.remove("enviando");
+    caixa.querySelector(".btn-enviar-fonte").textContent = "Enviar fonte";
+    return;
+  }
+  abrirModalCliente(corpo); // redesenha o popup com a fonte nova
+  carregarClientes();
 }
 
 // mostra, abaixo de cada campo de fonte, a fonte atual do cliente e a opção de voltar para a padrão
