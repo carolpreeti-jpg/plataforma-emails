@@ -43,3 +43,13 @@ Esse é o primeiro esboço, focado em fazer o fluxo completo funcionar. Se fizer
 - **Exportar tudo de uma vez**: baixar todos os PNGs gerados em um .zip com um clique.
 
 Me diz que já entra nesse esboço.
+
+## Site publicado (Render + Supabase)
+
+Online, o site roda no Render (plano grátis) e guarda clientes, conteúdos, logos e artes no Supabase Storage, porque o disco do Render grátis é apagado a cada reinício.
+
+- O servidor usa o Supabase quando as variáveis `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` estão definidas (no Render, em *Environment*; localmente, no arquivo `.env` — veja `.env.example`). Sem elas, usa as pastas locais.
+- O bucket público `arquivos` é criado automaticamente na primeira vez que o servidor sobe.
+- Para enviar os dados deste computador para o Supabase: preencha o `.env` e rode `npm run enviar-dados`.
+- No plano grátis, o site "dorme" após 15 minutos sem uso; o primeiro acesso depois disso demora cerca de 1 minuto.
+- O site não tem login: qualquer pessoa com o link pode ver e editar tudo.

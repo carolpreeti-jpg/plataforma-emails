@@ -8,3 +8,8 @@ services:
         value: "true"
       - key: PUPPETEER_EXECUTABLE_PATH
         value: /usr/bin/chromium
+      # dados e imagens ficam no Supabase (o disco do Render grátis é apagado a cada reinício)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
