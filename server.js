@@ -99,13 +99,71 @@ const rota = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).cat
 // --- upload de logo/foto (fica em memória e é gravado via storage) ---
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
-async function salvarUpload(file) {
+async function salvarUpload(file, pasta = "uploads") {
   if (!file) return null;
   const ext = path.extname(file.originalname) || ".png";
-  const caminho = `uploads/${Date.now()}-${slugify(path.basename(file.originalname, ext))}${ext}`;
+  const caminho = `${pasta}/${Date.now()}-${slugify(path.basename(file.originalname, ext))}${ext}`;
   await storage.salvarArquivo(caminho, file.buffer, file.mimetype);
   return caminho;
 }
+
+// --- fontes do cliente (uma família para títulos, outra para textos) ---
+const EXTENSOES_FONTE = { ttf: "truetype", otf: "opentype", woff: "woff", woff2: "woff2" };
+const MIME_FONTE = { ttf: "font/ttf", otf: "font/otf", woff: "font/woff", woff2: "font/woff2" };
+
+// o título usa negrito e regular juntos, então cada família pode ter vários arquivos;
+// o peso de cada um sai do nome do arquivo (ex.: "Montserrat-ExtraBold.ttf" → 800)
+function pesoPeloNome(nome) {
+  const n = nome.toLowerCase().replace(/[\s_-]/g, "");
+  if (/variable|\[wght/.test(n)) return "100 900";
+  const pesos = [
+    [/thin|hairline/, 100], [/extralight|ultralight/, 200], [/semibold|demibold/, 600],
+    [/extrabold|ultrabold/, 800], [/black|heavy/, 900], [/light/, 300], [/medium/, 500], [/bold/, 700],
+  ];
+  const achado = pesos.find(([re]) => re.test(n));
+  return achado ? String(achado[1]) : "400";
+}
+
+// "Montserrat-ExtraBold.ttf" → "Montserrat"; "PlayfairDisplay-VariableFont_wght.ttf" → "Playfair Display"
+function nomeDaFamilia(nomeArquivo) {
+  const base = path.basename(nomeArquivo, path.extname(nomeArquivo)).split(/[-_\[]/)[0];
+  return base.replace(/([a-z])([A-Z])/g, "$1 $2").trim() || base;
+}
+
+async function salvarFonte(arquivos) {
+  if (!arquivos || arquivos.length === 0) return null;
+  const invalidos = arquivos.filter((f) => !EXTENSOES_FONTE[path.extname(f.originalname).slice(1).toLowerCase()]);
+  if (invalidos.length) {
+    const erro = new Error(`Arquivo de fonte inválido: ${invalidos.map((f) => f.originalname).join(", ")} (use .ttf, .otf, .woff ou .woff2)`);
+    erro.status = 400;
+    throw erro;
+  }
+  const salvos = [];
+  for (const f of arquivos) {
+    salvos.push({
+      caminho: await salvarUpload(f, "uploads/fontes"),
+      arquivo: f.originalname,
+      peso: pesoPeloNome(f.originalname),
+      estilo: /italic|oblique/i.test(f.originalname) ? "italic" : "normal",
+    });
+  }
+  return { nome: nomeDaFamilia(arquivos[0].originalname), arquivos: salvos };
+}
+
+// fonte nova enviada → substitui; pedido de remoção → volta para a padrão; senão mantém a atual
+async function fonteAtualizada(req, campo, atual) {
+  const nova = await salvarFonte(req.files && req.files[campo]);
+  if (nova) return nova;
+  if (req.body[`remover_${campo}`] === "1") return null;
+  return atual || null;
+}
+
+const uploadCliente = upload.fields([
+  { name: "logo", maxCount: 1 },
+  { name: "fonteTitulo", maxCount: 20 },
+  { name: "fonteTexto", maxCount: 20 },
+]);
+const arquivoLogo = (req) => req.files && req.files.logo && req.files.logo[0];
 
 app.use(express.json());
 if (storage.usaSupabase) {
@@ -129,7 +187,7 @@ app.get("/api/clients", rota(async (req, res) => {
   res.json(await lerClientes());
 }));
 
-app.post("/api/clients", upload.single("logo"), rota(async (req, res) => {
+app.post("/api/clients", uploadCliente, rota(async (req, res) => {
   const clients = await lerClientes();
   const { nome, corPrimaria, corSecundaria, corTexto } = req.body;
 
@@ -143,15 +201,19 @@ app.post("/api/clients", upload.single("logo"), rota(async (req, res) => {
     corPrimaria,
     corSecundaria: corSecundaria || "#EEEEEE",
     corTexto: corTexto || "#FFFFFF",
-    logo: await salvarUpload(req.file),
+    logo: await salvarUpload(arquivoLogo(req)),
   };
+  // "Copiar" no popup do cliente: a cópia começa com as mesmas fontes do original
+  const original = req.body.copiarFontesDe && clients.find((c) => c.id === req.body.copiarFontesDe);
+  novoCliente.fonteTitulo = await fonteAtualizada(req, "fonteTitulo", original ? original.fonteTitulo : null);
+  novoCliente.fonteTexto = await fonteAtualizada(req, "fonteTexto", original ? original.fonteTexto : null);
 
   clients.push(novoCliente);
   await salvarClientes(clients);
   res.status(201).json(novoCliente);
 }));
 
-app.put("/api/clients/:id", upload.single("logo"), rota(async (req, res) => {
+app.put("/api/clients/:id", uploadCliente, rota(async (req, res) => {
   const clients = await lerClientes();
   const idx = clients.findIndex((c) => c.id === req.params.id);
   if (idx === -1) return res.status(404).json({ erro: "Cliente não encontrado." });
@@ -165,7 +227,9 @@ app.put("/api/clients/:id", upload.single("logo"), rota(async (req, res) => {
     corPrimaria: corPrimaria || atual.corPrimaria,
     corSecundaria: corSecundaria || atual.corSecundaria,
     corTexto: corTexto || atual.corTexto,
-    logo: (await salvarUpload(req.file)) || atual.logo,
+    logo: (await salvarUpload(arquivoLogo(req))) || atual.logo,
+    fonteTitulo: await fonteAtualizada(req, "fonteTitulo", atual.fonteTitulo),
+    fonteTexto: await fonteAtualizada(req, "fonteTexto", atual.fonteTexto),
   };
 
   await salvarClientes(clients);
@@ -213,6 +277,24 @@ app.post("/api/content", upload.single("foto"), rota(async (req, res) => {
 }));
 
 // --- geração das artes ---
+const FONTE_TITULO_PADRAO = "'Baloo 2', sans-serif";
+const FONTE_TEXTO_PADRAO = "'Quicksand', sans-serif";
+
+// @font-face embutido (data URI) para cada arquivo da família; o Chromium não precisa buscar nada na rede
+async function cssDaFonte(fonte, familiaInterna) {
+  if (!fonte || !fonte.arquivos || fonte.arquivos.length === 0) return "";
+  const regras = [];
+  for (const arq of fonte.arquivos) {
+    const ext = path.extname(arq.caminho).slice(1).toLowerCase();
+    const buffer = await storage.lerArquivo(arq.caminho);
+    if (!buffer) throw new Error(`Arquivo de fonte não encontrado: ${arq.caminho}`);
+    regras.push(
+      `@font-face { font-family: '${familiaInterna}'; font-weight: ${arq.peso}; font-style: ${arq.estilo}; ` +
+        `src: url(data:${MIME_FONTE[ext]};base64,${buffer.toString("base64")}) format('${EXTENSOES_FONTE[ext]}'); }`
+    );
+  }
+  return regras.join("\n");
+}
 function preencherTemplate(templateHtml, dados) {
   let html = templateHtml;
   for (const [chave, valor] of Object.entries(dados)) {
@@ -254,7 +336,13 @@ app.post("/api/generate", async (req, res) => {
         continue;
       }
 
+      const temFonteTitulo = Boolean(cliente.fonteTitulo && cliente.fonteTitulo.arquivos && cliente.fonteTitulo.arquivos.length);
+      const temFonteTexto = Boolean(cliente.fonteTexto && cliente.fonteTexto.arquivos && cliente.fonteTexto.arquivos.length);
+
       const dados = {
+        FONTES_CSS: (await cssDaFonte(cliente.fonteTitulo, "Fonte Titulo Cliente")) + "\n" + (await cssDaFonte(cliente.fonteTexto, "Fonte Texto Cliente")),
+        FONTE_TITULO: temFonteTitulo ? `'Fonte Titulo Cliente', ${FONTE_TITULO_PADRAO}` : FONTE_TITULO_PADRAO,
+        FONTE_TEXTO: temFonteTexto ? `'Fonte Texto Cliente', ${FONTE_TEXTO_PADRAO}` : FONTE_TEXTO_PADRAO,
         COR_PRIMARIA: cliente.corPrimaria,
         COR_BOTAO: cliente.corSecundaria,
         LOGO: await paraDataUri(cliente.logo),
@@ -316,7 +404,7 @@ app.get("/api/download-zip", async (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).json({ erro: "Erro no servidor.", detalhe: err.message });
+  res.status(err.status || 500).json({ erro: err.status ? err.message : "Erro no servidor.", detalhe: err.message });
 });
 
 storage

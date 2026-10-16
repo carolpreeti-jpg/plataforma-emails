@@ -304,6 +304,61 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
+.field-row.field-row-2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 600px) {
+  .field-row.field-row-2 { grid-template-columns: 1fr; }
+}
+
+/* --- tipografia do cliente --- */
+.form-secao {
+  font-family: var(--font-display);
+  font-size: 15px;
+  margin: 26px 0 6px;
+}
+.form-dica {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+  line-height: 1.45;
+}
+.fonte-atual {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.fonte-atual:empty { display: none; }
+.fonte-atual strong { color: var(--text); }
+.fonte-atual label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  cursor: pointer;
+}
+.modal-fontes {
+  display: flex;
+  gap: 10px;
+  margin: -8px 0 24px;
+}
+.modal-fonte {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.modal-fonte-rotulo {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.modal-fonte-nome { font-size: 14px; }
+.modal-fonte-nome.padrao { color: var(--text-muted); }
 
 .color-input {
   display: flex;

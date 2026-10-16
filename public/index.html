@@ -174,7 +174,7 @@
     <section class="panel" id="panel-clientes">
       <header class="panel-head">
         <h1>Clientes</h1>
-        <p>Cadastre cor e logo de cada cliente. Isso alimenta a geração automática das artes.</p>
+        <p>Cadastre cores, logo e fontes de cada cliente. Isso alimenta a geração automática das artes.</p>
       </header>
 
       <div class="grid-clients" id="lista-clientes"></div>
@@ -218,6 +218,21 @@
         <div class="field">
           <label for="logo">Logo (PNG, fundo transparente de preferência)</label>
           <input type="file" id="logo" name="logo" accept="image/*">
+        </div>
+
+        <h3 class="form-secao">Tipografia</h3>
+        <p class="form-dica">Envie todos os arquivos da fonte de uma vez (Regular, Bold, ExtraBold...): o título usa negrito e regular juntos. Sem fonte cadastrada, a arte usa Baloo 2 no título e Quicksand no texto.</p>
+        <div class="field-row field-row-2">
+          <div class="field">
+            <label for="fonteTitulo">Fonte do título</label>
+            <input type="file" id="fonteTitulo" name="fonteTitulo" accept=".ttf,.otf,.woff,.woff2" multiple>
+            <div class="fonte-atual" id="fonte-atual-fonteTitulo"></div>
+          </div>
+          <div class="field">
+            <label for="fonteTexto">Fonte do texto</label>
+            <input type="file" id="fonteTexto" name="fonteTexto" accept=".ttf,.otf,.woff,.woff2" multiple>
+            <div class="fonte-atual" id="fonte-atual-fonteTexto"></div>
+          </div>
         </div>
 
         <div class="form-actions">

@@ -205,6 +205,10 @@ function abrirModalCliente(cliente) {
         <span class="swatch-hex">${cliente.corTexto}</span>
       </div>
     </div>
+    <div class="modal-fontes">
+      ${htmlFonteModal("Fonte do título", cliente.fonteTitulo, "Baloo 2")}
+      ${htmlFonteModal("Fonte do texto", cliente.fonteTexto, "Quicksand")}
+    </div>
     <div class="modal-actions">
       <button class="btn ghost" id="modal-btn-copiar">Copiar</button>
       <button class="btn ghost" id="modal-btn-editar">Editar</button>
@@ -226,6 +230,36 @@ function abrirModalCliente(cliente) {
   });
 
   modalOverlay.classList.add("active");
+}
+
+function temFonte(fonte) {
+  return Boolean(fonte && fonte.arquivos && fonte.arquivos.length);
+}
+
+function htmlFonteModal(rotulo, fonte, padrao) {
+  const nome = temFonte(fonte)
+    ? `<span class="modal-fonte-nome">${fonte.nome}</span>`
+    : `<span class="modal-fonte-nome padrao">${padrao} (padrão)</span>`;
+  return `<div class="modal-fonte"><span class="modal-fonte-rotulo">${rotulo}</span>${nome}</div>`;
+}
+
+// mostra, abaixo de cada campo de fonte, a fonte atual do cliente e a opção de voltar para a padrão
+function mostrarFonteAtual(campo, fonte) {
+  const div = document.getElementById(`fonte-atual-${campo}`);
+  if (!temFonte(fonte)) {
+    div.innerHTML = "";
+    return;
+  }
+  const qtd = fonte.arquivos.length;
+  div.innerHTML = `
+    Atual: <strong>${fonte.nome}</strong> (${qtd} ${qtd === 1 ? "arquivo" : "arquivos"}). Enviar novos arquivos substitui.
+    <label><input type="checkbox" id="remover-${campo}"> voltar para a fonte padrão</label>
+  `;
+}
+
+function limparFontesAtuais() {
+  mostrarFonteAtual("fonteTitulo", null);
+  mostrarFonteAtual("fonteTexto", null);
 }
 
 function fecharModalCliente() {
@@ -255,7 +289,10 @@ function editarCliente(cliente) {
   document.getElementById("preview-primaria").style.background = cliente.corPrimaria;
   document.getElementById("preview-secundaria").style.background = cliente.corSecundaria;
   document.getElementById("preview-texto").style.background = cliente.corTexto;
-  
+
+  mostrarFonteAtual("fonteTitulo", cliente.fonteTitulo);
+  mostrarFonteAtual("fonteTexto", cliente.fonteTexto);
+
   btnCancelarEdicao.style.display = "inline-block";
   formCliente.scrollIntoView({ behavior: "smooth" });
 }
@@ -265,6 +302,7 @@ btnCancelarEdicao.addEventListener("click", () => {
   formClienteTitulo.textContent = "Novo cliente";
   clienteIdEditando.value = "";
   btnCancelarEdicao.style.display = "none";
+  limparFontesAtuais();
 });
 
 async function excluirCliente(id) {
@@ -281,6 +319,7 @@ async function copiarCliente(cliente) {
   dados.append("corPrimaria", cliente.corPrimaria);
   dados.append("corSecundaria", cliente.corSecundaria);
   dados.append("corTexto", cliente.corTexto);
+  dados.append("copiarFontesDe", cliente.id);
 
   try {
     await fetch("/api/clients", { method: "POST", body: dados });
@@ -318,16 +357,28 @@ formCliente.addEventListener("submit", async (e) => {
   const arquivoLogo = document.getElementById("logo").files[0];
   if (arquivoLogo) dados.append("logo", arquivoLogo);
 
+  ["fonteTitulo", "fonteTexto"].forEach((campo) => {
+    Array.from(document.getElementById(campo).files).forEach((arquivo) => dados.append(campo, arquivo));
+    const remover = document.getElementById(`remover-${campo}`);
+    if (remover && remover.checked) dados.append(`remover_${campo}`, "1");
+  });
+
   const id = clienteIdEditando.value;
   const url = id ? `/api/clients/${id}` : "/api/clients";
   const method = id ? "PUT" : "POST";
 
-  await fetch(url, { method, body: dados });
+  const res = await fetch(url, { method, body: dados });
+  if (!res.ok) {
+    const corpo = await res.json().catch(() => ({}));
+    alert(corpo.erro || "Não foi possível salvar o cliente.");
+    return;
+  }
 
   formCliente.reset();
   formClienteTitulo.textContent = "Novo cliente";
   clienteIdEditando.value = "";
   btnCancelarEdicao.style.display = "none";
+  limparFontesAtuais();
   carregarClientes();
 });
 
