@@ -4,6 +4,7 @@ const express = require("express");
 const multer = require("multer");
 const puppeteer = require("puppeteer");
 const JSZip = require("jszip");
+const sharp = require("sharp");
 const storage = require("./storage");
 
 const app = express();
@@ -61,6 +62,15 @@ async function paraDataUri(caminhoRelativo) {
   return `data:image/${mime};base64,${buffer.toString("base64")}`;
 }
 
+// a foto de fundo ocupa 1080px de largura na arte (2160px no print 2x); fotos maiores só deixam o
+// Chromium lento — no servidor grátis do Render, uma foto de 4500px estourava o tempo limite
+async function fotoParaDataUri(caminhoRelativo) {
+  const buffer = await storage.lerArquivo(caminhoRelativo);
+  if (!buffer) throw new Error(`Arquivo não encontrado: ${caminhoRelativo}`);
+  const reduzida = await sharp(buffer).rotate().resize({ width: 2160, withoutEnlargement: true }).jpeg({ quality: 88 }).toBuffer();
+  return `data:image/jpeg;base64,${reduzida.toString("base64")}`;
+}
+
 // evita "linha órfã" (última linha de um parágrafo com uma palavra só):
 // une as duas últimas palavras de cada linha com espaço não separável
 function protegerOrfas(texto) {
@@ -70,7 +80,7 @@ function protegerOrfas(texto) {
     .map((linha) => {
       const idx = linha.trimEnd().lastIndexOf(" ");
       if (idx === -1) return linha;
-      return linha.slice(0, idx) + " " + linha.slice(idx + 1);
+      return linha.slice(0, idx) + " " + linha.slice(idx + 1);
     })
     .join("\n");
 }
@@ -233,9 +243,10 @@ app.post("/api/generate", async (req, res) => {
 
     browser = await puppeteer.launch({ args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"] });
     const page = await browser.newPage();
+    page.setDefaultTimeout(120000); // o servidor grátis do Render é bem mais lento que um computador
     const resultados = [];
 
-    const fotoUri = content.foto ? await paraDataUri(content.foto) : "";
+    const fotoUri = content.foto ? await fotoParaDataUri(content.foto) : "";
 
     for (const cliente of clients) {
       if (!cliente.logo) {
