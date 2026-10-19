@@ -361,6 +361,7 @@ app.post("/api/generate", async (req, res) => {
       // "load" + fontes prontas em vez de "networkidle0": no Render, esperar a rede ficar ociosa travava a geração
       await page.setContent(htmlFinal, { waitUntil: "load" });
       await page.evaluate(() => document.fonts.ready);
+      await page.evaluate(() => window.equilibrarTitulo());
 
       const elemento = await page.$(".arte");
       const caminho = `output/${mes}/${cliente.id}.png`;

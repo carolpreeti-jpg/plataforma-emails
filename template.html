@@ -67,6 +67,7 @@
   }
   .titulo-overlay .negrito { font-weight: 800; }
   .titulo-overlay .regular { font-weight: 500; }
+  .titulo-overlay .linha { white-space: nowrap; } /* linhas já escolhidas por equilibrarTitulo() */
 
   /* ================= CORPO DE TEXTO ================= */
   .corpo-secao { padding: 55px 50px 45px 50px; }
@@ -118,6 +119,114 @@
     </div>
 
   </div>
+
+<script>
+  // Escolhe onde quebrar as linhas do título para ele ficar harmônico: linhas de tamanho parecido
+  // (nunca uma linha do meio menor que as vizinhas) e a última um pouco maior, para dar hierarquia.
+  // O servidor chama depois que as fontes carregam, porque a largura de cada linha depende da fonte.
+  window.equilibrarTitulo = function () {
+    const titulo = document.querySelector(".titulo-overlay");
+    const estilo = getComputedStyle(titulo);
+    // largura da foto, não do título: dentro do flex o título encolhe até o tamanho do texto
+    const larguraMax = titulo.parentElement.clientWidth - parseFloat(estilo.paddingLeft) - parseFloat(estilo.paddingRight);
+
+    // cada palavra guarda o peso (negrito ou regular); o espaço não separável de protegerOrfas fica dentro da palavra
+    const palavras = [];
+    for (const classe of ["negrito", "regular"]) {
+      const el = titulo.querySelector("." + classe);
+      for (const texto of el.textContent.trim().split(/ +/).filter(Boolean)) palavras.push({ classe, texto });
+    }
+    const total = palavras.length;
+    if (!total) return;
+    // onde termina o negrito: o normal é o regular começar numa linha nova
+    const fronteira = palavras.findIndex((p) => p.classe === "regular");
+    const temFronteira = fronteira > 0;
+
+    // monta a linha [inicio, fim) com um <span> por trecho de mesmo peso
+    function montarLinha(inicio, fim) {
+      const linha = document.createElement("span");
+      linha.className = "linha";
+      let trecho = null;
+      for (let i = inicio; i < fim; i++) {
+        if (!trecho || trecho.className !== palavras[i].classe) {
+          if (trecho) linha.appendChild(document.createTextNode(" "));
+          trecho = document.createElement("span");
+          trecho.className = palavras[i].classe;
+          linha.appendChild(trecho);
+          trecho.textContent = palavras[i].texto;
+        } else {
+          trecho.textContent += " " + palavras[i].texto;
+        }
+      }
+      return linha;
+    }
+
+    const medidor = document.createElement("div");
+    medidor.style.cssText = "position:absolute; visibility:hidden;";
+    titulo.appendChild(medidor);
+    const cache = new Map();
+    function largura(inicio, fim) {
+      const chave = inicio + "-" + fim;
+      if (!cache.has(chave)) {
+        medidor.replaceChildren(montarLinha(inicio, fim));
+        cache.set(chave, medidor.firstChild.getBoundingClientRect().width / larguraMax);
+      }
+      return cache.get(chave);
+    }
+
+    // todas as formas de dividir as palavras [inicio, total) em `qtd` linhas que cabem na largura
+    function divisoes(inicio, qtd) {
+      if (qtd === 1) return largura(inicio, total) <= 1 ? [[total]] : [];
+      const resultado = [];
+      for (let fim = inicio + 1; fim <= total - qtd + 1; fim++) {
+        if (largura(inicio, fim) > 1) break;
+        for (const resto of divisoes(fim, qtd - 1)) resultado.push([fim, ...resto]);
+      }
+      return resultado;
+    }
+
+    // quanto menor, melhor (larguras em fração da largura disponível)
+    function custo(fins) {
+      const w = fins.map((fim, i) => largura(i ? fins[i - 1] : 0, fim));
+      const n = w.length;
+      let c = 0.04 * n; // sem motivo, não quebra em mais linhas
+      if (temFronteira && !fins.includes(fronteira)) c += 0.06; // regular emendado no negrito: só se ficar bem melhor
+      if (n === 1) return c;
+      const ultima = w[n - 1];
+      const anteriores = w.slice(0, -1);
+      const maior = Math.max(...anteriores);
+      const media = anteriores.reduce((a, b) => a + b, 0) / anteriores.length;
+      c += 4 * anteriores.reduce((s, x) => s + (x - media) ** 2, 0); // linhas de cima parecidas entre si
+      for (let i = 1; i < n - 1; i++) {
+        const buraco = Math.min(w[i - 1], w[i + 1]) - w[i]; // linha do meio menor que as vizinhas
+        if (buraco > 0) c += 30 * buraco ** 2 + (buraco > 0.04 ? 0.15 : 0);
+      }
+      if (ultima < maior) c += 10 * (maior - ultima) ** 2 + 0.05; // última menor que alguma de cima
+      c += 2 * (ultima - Math.min(1, maior * 1.1)) ** 2; // ideal: última ~10% maior
+      return c;
+    }
+
+    let minimo = 1;
+    while (minimo <= total && !divisoes(0, minimo).length) minimo++;
+    if (minimo > total) { medidor.remove(); return; } // alguma palavra não cabe sozinha: deixa como está
+
+    let melhor = null;
+    let melhorCusto = Infinity;
+    for (let qtd = minimo; qtd <= Math.min(total, minimo + 2); qtd++) {
+      for (const fins of divisoes(0, qtd)) {
+        const c = custo(fins);
+        if (c < melhorCusto) { melhorCusto = c; melhor = fins; }
+      }
+    }
+
+    medidor.remove();
+    titulo.replaceChildren();
+    melhor.forEach((fim, i) => {
+      if (i > 0) titulo.appendChild(document.createElement("br"));
+      titulo.appendChild(montarLinha(i ? melhor[i - 1] : 0, fim));
+    });
+  };
+</script>
 
 </body>
 </html>
