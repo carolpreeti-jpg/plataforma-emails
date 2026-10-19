@@ -206,10 +206,11 @@ function abrirModalCliente(cliente) {
       </div>
     </div>
     <div class="modal-fontes">
-      ${htmlFonteModal("fonteTitulo", "Fonte do título", cliente.fonteTitulo, "Baloo 2")}
-      ${htmlFonteModal("fonteTexto", "Fonte do texto", cliente.fonteTexto, "Quicksand")}
+      <div class="modal-fonte" data-campo="fonteTitulo"></div>
+      <div class="modal-fonte" data-campo="fonteTexto"></div>
     </div>
     <p class="modal-fonte-dica">Selecione todos os arquivos da fonte de uma vez (Regular, SemiBold, Bold, ExtraBold...) — .ttf, .otf, .woff ou .woff2.</p>
+    <button class="btn primary modal-salvar" id="modal-btn-salvar" disabled>Salvar</button>
     <div class="modal-actions">
       <button class="btn ghost" id="modal-btn-copiar">Copiar</button>
       <button class="btn ghost" id="modal-btn-editar">Editar</button>
@@ -217,75 +218,112 @@ function abrirModalCliente(cliente) {
     </div>
   `;
 
+  // ações que fecham o popup pedem confirmação se houver fonte trocada e ainda não salva
   modalContent.querySelector("#modal-btn-editar").addEventListener("click", () => {
-    fecharModalCliente();
-    editarCliente(cliente);
+    if (fecharModalCliente()) editarCliente(cliente);
   });
   modalContent.querySelector("#modal-btn-copiar").addEventListener("click", () => {
-    fecharModalCliente();
-    copiarCliente(cliente);
+    if (fecharModalCliente()) copiarCliente(cliente);
   });
   modalContent.querySelector("#modal-btn-excluir").addEventListener("click", () => {
-    fecharModalCliente();
-    excluirCliente(cliente.id);
+    if (fecharModalCliente()) excluirCliente(cliente.id);
   });
 
-  // fontes: enviar/trocar abre o seletor de arquivos e já salva; "usar padrão" remove a fonte do cliente
-  modalContent.querySelectorAll(".modal-fonte").forEach((caixa) => {
-    const campo = caixa.dataset.campo;
-    const input = caixa.querySelector("input[type=file]");
-    caixa.querySelector(".btn-enviar-fonte").addEventListener("click", () => input.click());
-    input.addEventListener("change", () => {
-      if (input.files.length === 0) return;
-      const dados = new FormData();
-      Array.from(input.files).forEach((arquivo) => dados.append(campo, arquivo));
-      salvarFonteDoModal(cliente.id, caixa, dados);
-    });
-    const remover = caixa.querySelector(".btn-remover-fonte");
-    if (remover) {
-      remover.addEventListener("click", () => {
-        const dados = new FormData();
-        dados.append(`remover_${campo}`, "1");
-        salvarFonteDoModal(cliente.id, caixa, dados);
-      });
-    }
-  });
+  // fontes: trocar ou "usar padrão" só marca a alteração; ela vai para o servidor no botão Salvar
+  fontesPendentes = {};
+  modalContent.querySelectorAll(".modal-fonte").forEach((caixa) => desenharFonteModal(caixa, cliente));
+  modalContent.querySelector("#modal-btn-salvar").addEventListener("click", () => salvarFontesDoModal(cliente.id));
 
   modalOverlay.classList.add("active");
 }
+
+// alterações de fonte feitas no popup e ainda não salvas: { campo: { arquivos: [File] } | { remover: true } }
+let fontesPendentes = {};
+const FONTES_DO_MODAL = {
+  fonteTitulo: { rotulo: "Fonte do título", padrao: "Baloo 2" },
+  fonteTexto: { rotulo: "Fonte do texto", padrao: "Quicksand" },
+};
 
 function temFonte(fonte) {
   return Boolean(fonte && fonte.arquivos && fonte.arquivos.length);
 }
 
-function htmlFonteModal(campo, rotulo, fonte, padrao) {
-  const possui = temFonte(fonte);
-  const nome = possui
-    ? `<span class="modal-fonte-nome">${fonte.nome}</span>`
-    : `<span class="modal-fonte-nome padrao">${padrao} (padrão)</span>`;
-  return `
-    <div class="modal-fonte" data-campo="${campo}">
-      <span class="modal-fonte-rotulo">${rotulo}</span>${nome}
-      <input type="file" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
-      <div class="modal-fonte-acoes">
-        <button type="button" class="btn ghost btn-enviar-fonte">${possui ? "Trocar fonte" : "Enviar fonte"}</button>
-        ${possui ? `<button type="button" class="btn-link btn-remover-fonte">usar padrão</button>` : ""}
-      </div>
-    </div>`;
+// mesmo critério do servidor: "Montserrat-ExtraBold.ttf" → "Montserrat"
+function nomeDaFamilia(nomeArquivo) {
+  const base = nomeArquivo.replace(/\.[^.]+$/, "").split(/[-_\[]/)[0];
+  return base.replace(/([a-z])([A-Z])/g, "$1 $2").trim() || base;
 }
 
-async function salvarFonteDoModal(clienteId, caixa, dados) {
-  caixa.classList.add("enviando");
-  caixa.querySelector(".btn-enviar-fonte").textContent = "Enviando...";
+function desenharFonteModal(caixa, cliente) {
+  const campo = caixa.dataset.campo;
+  const { rotulo, padrao } = FONTES_DO_MODAL[campo];
+  const pendente = fontesPendentes[campo];
+  const possui = pendente ? Boolean(pendente.arquivos) : temFonte(cliente[campo]);
+
+  let nome;
+  if (pendente && pendente.arquivos) nome = nomeDaFamilia(pendente.arquivos[0].name);
+  else if (possui) nome = cliente[campo].nome;
+  else nome = `${padrao} (padrão)`;
+
+  caixa.innerHTML = `
+    <span class="modal-fonte-rotulo">${rotulo}</span>
+    <span class="modal-fonte-nome ${possui ? "" : "padrao"}">${nome}</span>
+    ${pendente ? `<span class="modal-fonte-pendente">não salvo</span>` : ""}
+    <input type="file" accept=".ttf,.otf,.woff,.woff2" multiple hidden>
+    <div class="modal-fonte-acoes">
+      <button type="button" class="btn ghost btn-enviar-fonte">${possui ? "Trocar fonte" : "Enviar fonte"}</button>
+      ${possui ? `<button type="button" class="btn-link btn-remover-fonte">usar padrão</button>` : ""}
+      ${pendente ? `<button type="button" class="btn-link btn-desfazer-fonte">desfazer</button>` : ""}
+    </div>`;
+  caixa.classList.toggle("alterada", Boolean(pendente));
+
+  const atualizar = () => {
+    desenharFonteModal(caixa, cliente);
+    modalContent.querySelector("#modal-btn-salvar").disabled = Object.keys(fontesPendentes).length === 0;
+  };
+  const input = caixa.querySelector("input[type=file]");
+  caixa.querySelector(".btn-enviar-fonte").addEventListener("click", () => input.click());
+  input.addEventListener("change", () => {
+    if (input.files.length === 0) return;
+    fontesPendentes[campo] = { arquivos: Array.from(input.files) };
+    atualizar();
+  });
+  const remover = caixa.querySelector(".btn-remover-fonte");
+  if (remover) {
+    remover.addEventListener("click", () => {
+      // tirar uma fonte que nem foi salva só desfaz; senão marca para voltar à padrão
+      if (temFonte(cliente[campo])) fontesPendentes[campo] = { remover: true };
+      else delete fontesPendentes[campo];
+      atualizar();
+    });
+  }
+  const desfazer = caixa.querySelector(".btn-desfazer-fonte");
+  if (desfazer) {
+    desfazer.addEventListener("click", () => {
+      delete fontesPendentes[campo];
+      atualizar();
+    });
+  }
+}
+
+async function salvarFontesDoModal(clienteId) {
+  const dados = new FormData();
+  for (const [campo, pendente] of Object.entries(fontesPendentes)) {
+    if (pendente.arquivos) pendente.arquivos.forEach((arquivo) => dados.append(campo, arquivo));
+    else dados.append(`remover_${campo}`, "1");
+  }
+  const botao = modalContent.querySelector("#modal-btn-salvar");
+  botao.disabled = true;
+  botao.textContent = "Salvando...";
   const res = await fetch(`/api/clients/${clienteId}`, { method: "PUT", body: dados });
   const corpo = await res.json().catch(() => ({}));
   if (!res.ok) {
-    alert(corpo.erro || "Não foi possível salvar a fonte.");
-    caixa.classList.remove("enviando");
-    caixa.querySelector(".btn-enviar-fonte").textContent = "Enviar fonte";
+    alert(corpo.erro || "Não foi possível salvar as alterações.");
+    botao.disabled = false;
+    botao.textContent = "Salvar";
     return;
   }
-  abrirModalCliente(corpo); // redesenha o popup com a fonte nova
+  abrirModalCliente(corpo); // redesenha o popup já com as fontes salvas
   carregarClientes();
 }
 
@@ -308,8 +346,12 @@ function limparFontesAtuais() {
   mostrarFonteAtual("fonteTexto", null);
 }
 
+// devolve false se a pessoa preferiu continuar no popup para salvar
 function fecharModalCliente() {
+  if (Object.keys(fontesPendentes).length && !confirm("Há alterações não salvas. Sair sem salvar?")) return false;
+  fontesPendentes = {};
   modalOverlay.classList.remove("active");
+  return true;
 }
 
 modalClose.addEventListener("click", fecharModalCliente);

@@ -367,7 +367,19 @@ body {
   margin-top: 10px;
 }
 .modal-fonte-acoes .btn { padding: 6px 12px; font-size: 13px; }
-.modal-fonte.enviando { opacity: 0.6; pointer-events: none; }
+.modal-fonte.alterada { border-color: var(--accent); }
+.modal-fonte-pendente {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #fbbf24;
+}
+.modal-salvar {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+.modal-salvar:disabled { opacity: 0.45; cursor: default; transform: none; }
 .btn-link {
   background: none;
   border: none;
