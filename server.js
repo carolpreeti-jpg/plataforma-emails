@@ -23,7 +23,7 @@ function lerClientes() {
 function salvarClientes(clients) {
   return storage.salvarJson(CLIENTS_PATH, clients);
 }
-const CONTEUDO_VAZIO = { tituloNegrito: "", tituloRegular: "", corpo: "", pergunta: "", ctaTexto: "", ctaBotao: "", foto: null };
+const CONTEUDO_VAZIO = { tituloNegrito: "",corpo: "", pergunta: "", ctaTexto: "", ctaBotao: "", foto: null };
 
 function mesAtualPadrao() {
   const agora = new Date();
@@ -111,7 +111,7 @@ async function salvarUpload(file, pasta = "uploads") {
 const EXTENSOES_FONTE = { ttf: "truetype", otf: "opentype", woff: "woff", woff2: "woff2" };
 const MIME_FONTE = { ttf: "font/ttf", otf: "font/otf", woff: "font/woff", woff2: "font/woff2" };
 
-// o título usa negrito e regular juntos, então cada família pode ter vários arquivos;
+// o título usa o negrito e o texto usa outros pesos, então cada família pode ter vários arquivos;
 // o peso de cada um sai do nome do arquivo (ex.: "Montserrat-ExtraBold.ttf" → 800)
 function pesoPeloNome(nome) {
   const n = nome.toLowerCase().replace(/[\s_-]/g, "");
@@ -260,11 +260,10 @@ app.get("/api/content", rota(async (req, res) => {
 app.post("/api/content", upload.single("foto"), rota(async (req, res) => {
   const mes = req.body.mes || mesAtualPadrao();
   const atual = await lerConteudoDoMes(mes);
-  const { tituloNegrito, tituloRegular, corpo, pergunta, ctaTexto, ctaBotao } = req.body;
+  const { tituloNegrito, corpo, pergunta, ctaTexto, ctaBotao } = req.body;
 
   const content = {
     tituloNegrito: tituloNegrito ?? atual.tituloNegrito ?? "",
-    tituloRegular: tituloRegular ?? atual.tituloRegular ?? "",
     corpo: corpo ?? atual.corpo ?? "",
     pergunta: pergunta ?? atual.pergunta ?? "",
     ctaTexto: ctaTexto ?? atual.ctaTexto ?? "",
@@ -348,7 +347,6 @@ app.post("/api/generate", async (req, res) => {
         LOGO: await paraDataUri(cliente.logo),
         FOTO: fotoUri,
         TITULO_NEGRITO: protegerOrfas(content.tituloNegrito),
-        TITULO_REGULAR: protegerOrfas(content.tituloRegular),
         CORPO: protegerOrfas(content.corpo),
         PERGUNTA: protegerOrfas(content.pergunta),
         CTA_TEXTO: protegerOrfas(content.ctaTexto),

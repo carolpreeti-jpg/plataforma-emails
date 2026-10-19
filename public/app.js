@@ -486,8 +486,7 @@ dropdownMesGerar.onChange((mes) => {
 // ======================= COLAR TEXTO (preenche os campos automaticamente) =======================
 
 const ROTULOS_CAMPOS = [
-  { campo: "tituloNegrito", rotulos: ["título negrito", "titulo negrito"] },
-  { campo: "tituloRegular", rotulos: ["título regular", "titulo regular"] },
+  { campo: "tituloNegrito", rotulos: ["título", "titulo", "título negrito", "titulo negrito"] },
   { campo: "corpo", rotulos: ["corpo"] },
   { campo: "pergunta", rotulos: ["pergunta"] },
   { campo: "ctaTexto", rotulos: ["cta texto", "texto do cta", "texto da faixa final"] },
@@ -523,7 +522,7 @@ function extrairCamposDoTexto(texto) {
 }
 
 // Quando o texto colado não usa rótulos, identifica cada parte pela posição/estrutura:
-// 1ª linha = título (separado no 1º vírgula em negrito/regular), última linha = botão,
+// 1ª linha = título, última linha = botão,
 // a linha com "?" no meio = pergunta, a linha logo antes do botão = texto do CTA,
 // o que sobrar = corpo.
 function extrairCamposAutomatico(texto) {
@@ -535,14 +534,7 @@ function extrairCamposAutomatico(texto) {
 
   if (linhas.length === 0) return resultado;
 
-  const primeira = linhas[0];
-  const idxVirgula = primeira.indexOf(",");
-  if (idxVirgula !== -1) {
-    resultado.tituloNegrito = primeira.slice(0, idxVirgula + 1).trim();
-    resultado.tituloRegular = primeira.slice(idxVirgula + 1).trim();
-  } else {
-    resultado.tituloNegrito = primeira;
-  }
+  resultado.tituloNegrito = linhas[0];
 
   let meio = linhas.slice(1);
 
@@ -592,7 +584,7 @@ document.getElementById("btn-extrair-texto").addEventListener("click", () => {
 // ======================= CONTEÚDO =======================
 
 const formConteudo = document.getElementById("form-conteudo");
-const CAMPOS_CONTEUDO = ["tituloNegrito", "tituloRegular", "corpo", "pergunta", "ctaTexto", "ctaBotao"];
+const CAMPOS_CONTEUDO = ["tituloNegrito","corpo", "pergunta", "ctaTexto", "ctaBotao"];
 
 // os campos só são preenchidos pela extração do texto colado (ver "Colar texto da campanha"),
 // nunca automaticamente ao abrir a aba ou trocar de mês — por isso começam vazios.

@@ -65,8 +65,7 @@
     line-height: 1.1;
     text-shadow: 0 2px 10px rgba(0,0,0,0.25);
   }
-  .titulo-overlay .negrito { font-weight: 800; }
-  .titulo-overlay .regular { font-weight: 500; }
+  .titulo-overlay { font-weight: 800; }
   .titulo-overlay .linha { white-space: nowrap; } /* linhas já escolhidas por equilibrarTitulo() */
 
   /* ================= CORPO DE TEXTO ================= */
@@ -102,10 +101,7 @@
     </div>
 
     <div class="foto">
-      <div class="titulo-overlay">
-        <span class="negrito">{{TITULO_NEGRITO}}</span><br>
-        <span class="regular">{{TITULO_REGULAR}}</span>
-      </div>
+      <div class="titulo-overlay">{{TITULO_NEGRITO}}</div>
     </div>
 
     <div class="corpo-secao">
@@ -130,34 +126,15 @@
     // largura da foto, não do título: dentro do flex o título encolhe até o tamanho do texto
     const larguraMax = titulo.parentElement.clientWidth - parseFloat(estilo.paddingLeft) - parseFloat(estilo.paddingRight);
 
-    // cada palavra guarda o peso (negrito ou regular); o espaço não separável de protegerOrfas fica dentro da palavra
-    const palavras = [];
-    for (const classe of ["negrito", "regular"]) {
-      const el = titulo.querySelector("." + classe);
-      for (const texto of el.textContent.trim().split(/ +/).filter(Boolean)) palavras.push({ classe, texto });
-    }
+    // o espaço não separável de protegerOrfas fica dentro da palavra (as duas últimas andam juntas)
+    const palavras = titulo.textContent.trim().split(/[ \n]+/).filter(Boolean);
     const total = palavras.length;
     if (!total) return;
-    // onde termina o negrito: o normal é o regular começar numa linha nova
-    const fronteira = palavras.findIndex((p) => p.classe === "regular");
-    const temFronteira = fronteira > 0;
 
-    // monta a linha [inicio, fim) com um <span> por trecho de mesmo peso
     function montarLinha(inicio, fim) {
       const linha = document.createElement("span");
       linha.className = "linha";
-      let trecho = null;
-      for (let i = inicio; i < fim; i++) {
-        if (!trecho || trecho.className !== palavras[i].classe) {
-          if (trecho) linha.appendChild(document.createTextNode(" "));
-          trecho = document.createElement("span");
-          trecho.className = palavras[i].classe;
-          linha.appendChild(trecho);
-          trecho.textContent = palavras[i].texto;
-        } else {
-          trecho.textContent += " " + palavras[i].texto;
-        }
-      }
+      linha.textContent = palavras.slice(inicio, fim).join(" ");
       return linha;
     }
 
@@ -190,7 +167,6 @@
       const w = fins.map((fim, i) => largura(i ? fins[i - 1] : 0, fim));
       const n = w.length;
       let c = 0.04 * n; // sem motivo, não quebra em mais linhas
-      if (temFronteira && !fins.includes(fronteira)) c += 0.06; // regular emendado no negrito: só se ficar bem melhor
       if (n === 1) return c;
       const ultima = w[n - 1];
       const anteriores = w.slice(0, -1);
